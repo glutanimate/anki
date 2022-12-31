@@ -8,12 +8,16 @@
 
 #header {
     padding-bottom: 4px;
-    margin-top: -3px;
+    margin-top: 4px;
+}
+
+#outer {
+    height: 50px;
 }
 
 .tdcenter {
     white-space: nowrap;
-    border-radius: prop(border-radius);
+    border-radius: prop(border-radius-large);
     border-bottom-left-radius: prop(border-radius-large);
     border-bottom-right-radius: prop(border-radius-large);
     @include button.base($with-hover: false, $with-active: false);
@@ -21,9 +25,9 @@
     padding: 0;
 
     @include elevation(1, $opacity-boost: -0.08);
-    &:hover {
-        @include elevation(2);
-    }
+    // &:hover {
+    //     @include elevation(2);
+    // }
     transition: box-shadow 0.2s ease-in-out;
 }
 
