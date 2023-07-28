@@ -31,8 +31,8 @@ from anki.collection import Config, SearchNode
 from anki.consts import MODEL_CLOZE
 from anki.hooks import runFilter
 from anki.httpclient import HttpClient
-from anki.models import StockNotetype
-from anki.notes import Note, NoteFieldsCheckResult
+from anki.models import NotetypeId, StockNotetype
+from anki.notes import Note, NoteFieldsCheckResult, NoteId
 from anki.utils import checksum, is_lin, is_win, namedtmp
 from aqt import AnkiQt, colors, gui_hooks
 from aqt.operations import QueryOp
@@ -562,9 +562,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
             self.editorMode != EditorMode.ADD_CARDS
             and self.current_notetype_is_image_occlusion()
         ):
-            options = {"kind": "edit", "noteId": self.note.id}
-            options = {"mode": options}
-            js += " setupMaskEditor(%s);" % json.dumps(options)
+            js += f" setupMaskEditor({self._create_edit_io_options(self.note.id)});"
 
         js = gui_hooks.editor_will_load_note(js, self.note, self)
         self.web.evalWithCallback(
@@ -998,11 +996,9 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
 
         def accept(file: str) -> None:
             try:
-                html = self._addMedia(file)
-                mode = {"kind": "add", "imagePath": file, "notetypeId": 0}
-                # pass both html and options
-                options = {"html": html, "mode": mode}
-                self.web.eval(f"setupMaskEditor({json.dumps(options)})")
+                self.setup_mask_editor_for_new_note(
+                    image_path=file, notetype_id=0, is_external_image=True
+                )
             except Exception as e:
                 showWarning(str(e))
                 return
@@ -1016,6 +1012,45 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
         )
 
         self.parentWindow.activateWindow()
+
+    def setup_mask_editor_for_new_note(
+        self,
+        image_path: str,
+        notetype_id: NotetypeId | int = 0,
+        is_external_image: bool = True,
+    ):
+        """Set-up IO mask editor for adding new notes
+
+        Pre-supposes that active editor notetype is an image occlusion notetype
+
+        Args:
+            image_path: Absolute path to image or path relative to media collection.
+            notetype_id: ID of note type to use. Provided ID must belong to an
+                image occlusion notetype. Set this to 0 to auto-select the first
+                found image occlusion notetype in the user's collection.
+            is_external_image: Whether provided image is located outside the media
+                collection and needs to be added first.
+        """
+        if is_external_image:
+            html = self._addMedia(image_path)
+        else:
+            html = self.fnameToLink(image_path)
+        io_options = {
+            "mode": {"kind": "add", "imagePath": image_path, "notetypeId": notetype_id},
+            "html": html,
+        }
+        self.web.eval(f"setupMaskEditor({json.dumps(io_options)})")
+
+    def setup_mask_editor_for_existing_note(self, note_id: NoteId):
+        """Set-up IO mask editor for editing existing notes
+
+        Pre-supposes that active editor notetype is an image occlusion notetype
+        """
+        io_options = self._create_edit_io_options(note_id)
+        self.web.eval(f"setupMaskEditor({json.dumps(io_options)})")
+
+    def _create_edit_io_options(self, note_id: NoteId) -> dict:
+        return {"mode": {"kind": "edit", "noteId": note_id}}
 
     # Legacy editing routines
     ######################################################################
