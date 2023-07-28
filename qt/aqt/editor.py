@@ -1021,7 +1021,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
     ):
         """Set-up IO mask editor for adding new notes
 
-        Pre-supposes that active editor notetype is an image occlusion notetype
+        Presupposes that active editor notetype is an image occlusion notetype
 
         Args:
             image_path: Absolute path to image or path relative to media collection.
@@ -1044,7 +1044,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
     def setup_mask_editor_for_existing_note(self, note_id: NoteId):
         """Set-up IO mask editor for editing existing notes
 
-        Pre-supposes that active editor notetype is an image occlusion notetype
+        Presupposes that active editor notetype is an image occlusion notetype
         """
         io_options = self._create_edit_io_options(note_id)
         self.web.eval(f"setupMaskEditor({json.dumps(io_options)})")
