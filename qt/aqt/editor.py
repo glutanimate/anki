@@ -562,7 +562,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
             self.editorMode != EditorMode.ADD_CARDS
             and self.current_notetype_is_image_occlusion()
         ):
-            js += f" setupMaskEditor({self._create_edit_io_options(self.note.id)});"
+            js += f" setupMaskEditor({json.dumps(self._create_edit_io_options(self.note.id))});"
 
         js = gui_hooks.editor_will_load_note(js, self.note, self)
         self.web.evalWithCallback(
