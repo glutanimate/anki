@@ -571,12 +571,6 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
             f'require("anki/ui").loaded.then(() => {{ {js} }})', oncallback
         )
 
-    def current_notetype_is_image_occlusion(self) -> bool:
-        return bool(self.note) and (
-            self.note.note_type().get("originalStockKind", None)
-            == StockNotetype.OriginalStockKind.ORIGINAL_STOCK_KIND_IMAGE_OCCLUSION
-        )
-
     def _save_current_note(self) -> None:
         "Call after note is updated with data from webview."
         update_note(parent=self.widget, note=self.note).run_in_background(
@@ -986,6 +980,43 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
     def onCutOrCopy(self) -> None:
         self.web.user_cut_or_copied()
 
+    # Image occlusion
+    ######################################################################
+
+    def current_notetype_is_image_occlusion(self) -> bool:
+        return bool(self.note) and (
+            self.note.note_type().get("originalStockKind", None)
+            == StockNotetype.OriginalStockKind.ORIGINAL_STOCK_KIND_IMAGE_OCCLUSION
+        )
+
+    def select_image_and_occlude(self) -> None:
+        """Show a file selection screen, then get selected image path."""
+        extension_filter = " ".join(
+            f"*.{extension}" for extension in sorted(itertools.chain(pics))
+        )
+        filter = f"{tr.editing_media()} ({extension_filter})"
+
+        def accept(file: str) -> None:
+            try:
+                html = self._addMedia(file)
+                mode = {"kind": "add", "imagePath": file, "notetypeId": 0}
+                # pass both html and options
+                options = {"html": html, "mode": mode}
+                self.web.eval(f"setupMaskEditor({json.dumps(options)})")
+            except Exception as e:
+                showWarning(str(e))
+                return
+
+        file = getFile(
+            parent=self.widget,
+            title=tr.editing_add_media(),
+            cb=cast(Callable[[Any], None], accept),
+            filter=filter,
+            key="media",
+        )
+
+        self.parentWindow.activateWindow()
+
     # Legacy editing routines
     ######################################################################
 
@@ -1192,34 +1223,6 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
     def setTagsCollapsed(self, collapsed: bool) -> None:
         aqt.mw.pm.set_tags_collapsed(self.editorMode, collapsed)
 
-    def onAddImageForOcclusion(self) -> None:
-        """Show a file selection screen, then get selected image path."""
-        extension_filter = " ".join(
-            f"*.{extension}" for extension in sorted(itertools.chain(pics))
-        )
-        filter = f"{tr.editing_media()} ({extension_filter})"
-
-        def accept(file: str) -> None:
-            try:
-                html = self._addMedia(file)
-                mode = {"kind": "add", "imagePath": file, "notetypeId": 0}
-                # pass both html and options
-                options = {"html": html, "mode": mode}
-                self.web.eval(f"setupMaskEditor({json.dumps(options)})")
-            except Exception as e:
-                showWarning(str(e))
-                return
-
-        file = getFile(
-            parent=self.widget,
-            title=tr.editing_add_media(),
-            cb=cast(Callable[[Any], None], accept),
-            filter=filter,
-            key="media",
-        )
-
-        self.parentWindow.activateWindow()
-
     # Links from HTML
     ######################################################################
 
@@ -1249,7 +1252,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
             toggleMathjax=Editor.toggleMathjax,
             toggleShrinkImages=Editor.toggleShrinkImages,
             toggleCloseHTMLTags=Editor.toggleCloseHTMLTags,
-            addImageForOcclusion=Editor.onAddImageForOcclusion,
+            addImageForOcclusion=Editor.select_image_and_occlude,
         )
 
 
