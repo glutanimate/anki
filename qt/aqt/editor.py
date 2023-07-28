@@ -1017,27 +1017,21 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
         self,
         image_path: str,
         notetype_id: NotetypeId | int = 0,
-        is_external_image: bool = True,
     ):
         """Set-up IO mask editor for adding new notes
 
         Presupposes that active editor notetype is an image occlusion notetype
 
         Args:
-            image_path: Absolute path to image or path relative to media collection.
+            image_path: Absolute path to image.
             notetype_id: ID of note type to use. Provided ID must belong to an
                 image occlusion notetype. Set this to 0 to auto-select the first
                 found image occlusion notetype in the user's collection.
-            is_external_image: Whether provided image is located outside the media
-                collection and needs to be added first.
         """
-        if is_external_image:
-            html = self._addMedia(image_path)
-        else:
-            html = self.fnameToLink(image_path)
+        image_html = self._addMedia(image_path)
         io_options = {
             "mode": {"kind": "add", "imagePath": image_path, "notetypeId": notetype_id},
-            "html": html,
+            "html": image_html,
         }
         self.web.eval(f"setupMaskEditor({json.dumps(io_options)})")
 
