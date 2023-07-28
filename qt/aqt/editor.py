@@ -996,9 +996,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
 
         def accept(file: str) -> None:
             try:
-                self.setup_mask_editor_for_new_note(
-                    image_path=file, notetype_id=0, is_external_image=True
-                )
+                self.setup_mask_editor_for_new_note(image_path=file, notetype_id=0)
             except Exception as e:
                 showWarning(str(e))
                 return
