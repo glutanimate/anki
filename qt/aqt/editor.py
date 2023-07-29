@@ -1031,7 +1031,7 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
             "mode": {"kind": "add", "imagePath": image_path, "notetypeId": notetype_id},
             "html": image_html,
         }
-        self.web.eval(f"setupMaskEditor({json.dumps(io_options)})")
+        self._setup_mask_editor(io_options)
 
     def setup_mask_editor_for_existing_note(self, note_id: NoteId):
         """Set-up IO mask editor for editing existing notes
@@ -1039,7 +1039,14 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
         Presupposes that active editor notetype is an image occlusion notetype
         """
         io_options = self._create_edit_io_options(note_id)
-        self.web.eval(f"setupMaskEditor({json.dumps(io_options)})")
+        self._setup_mask_editor(io_options)
+
+    def _setup_mask_editor(self, io_options: dict):
+        self.web.eval(
+            'require("anki/ui").loaded.then(() =>'
+            f"setupMaskEditor({json.dumps(io_options)})"
+            "); "
+        )
 
     def _create_edit_io_options(self, note_id: NoteId) -> dict:
         return {"mode": {"kind": "edit", "noteId": note_id}}
