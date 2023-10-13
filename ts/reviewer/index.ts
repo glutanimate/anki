@@ -10,6 +10,8 @@ import "css-browser-selector/css_browser_selector.min";
 export { default as $, default as jQuery } from "jquery/dist/jquery";
 
 import { setupImageCloze } from "../image-occlusion/review";
+import type { Callback } from "../lib/hooks";
+import { runHook } from "../lib/hooks";
 import { mutateNextCardStates } from "./answering";
 
 globalThis.anki = globalThis.anki || {};
@@ -24,8 +26,6 @@ import { preloadResources } from "./preload";
 
 declare const MathJax: any;
 
-type Callback = () => void | Promise<void>;
-
 export const onUpdateHook: Array<Callback> = [];
 export const onShownHook: Array<Callback> = [];
 
@@ -34,23 +34,6 @@ let typeans: HTMLInputElement | undefined;
 
 export function getTypedAnswer(): string | null {
     return typeans?.value ?? null;
-}
-
-function _runHook(
-    hooks: Array<Callback>,
-): Promise<PromiseSettledResult<void | Promise<void>>[]> {
-    const promises: (Promise<void> | void)[] = [];
-
-    for (const hook of hooks) {
-        try {
-            const result = hook();
-            promises.push(result);
-        } catch (error) {
-            console.log("Hook failed: ", error);
-        }
-    }
-
-    return Promise.allSettled(promises);
 }
 
 let _updatingQueue: Promise<void> = Promise.resolve();
@@ -142,7 +125,7 @@ export async function _updateQA(
         await setInnerHTML(qa, renderError("html")(error));
     }
 
-    await _runHook(onUpdateHook);
+    await runHook(onUpdateHook);
 
     // dynamic toolbar background
     bridgeCommand("updateToolbar");
@@ -159,7 +142,7 @@ export async function _updateQA(
 
     qa.style.opacity = "1";
 
-    await _runHook(onShownHook);
+    await runHook(onShownHook);
 }
 
 export function _showQuestion(q: string, a: string, bodyclass: string): void {
