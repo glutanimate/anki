@@ -1,16 +1,18 @@
 // Copyright: Ankitects Pty Ltd and contributors
 // License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-export type Callback = () => void | Promise<void>;
+export type Callback<T> = (arg?: T) => void | Promise<void>;
+export type Filter<T> = (arg: T) => T | Promise<T>;
 
-export function runHook(
-    hooks: Array<Callback>,
+export function runHook<A>(
+    hooks: Array<Callback<A>>,
+    arg?: A,
 ): Promise<PromiseSettledResult<void | Promise<void>>[]> {
     const promises: (Promise<void> | void)[] = [];
 
     for (const hook of hooks) {
         try {
-            const result = hook();
+            const result = hook(arg);
             promises.push(result);
         } catch (error) {
             console.log("Hook failed: ", error);
@@ -19,8 +21,6 @@ export function runHook(
 
     return Promise.allSettled(promises);
 }
-
-export type Filter<T> = (arg: T) => T | Promise<T>;
 
 export async function runFilter<R>(
     filters: Array<Filter<R>>,

@@ -3,7 +3,7 @@
 
 import { runFilter, runHook } from "./hooks";
 
-test("runHook", async () => {
+test("runHook without arg", async () => {
     const hooks = [
         jest.fn(),
         jest.fn(),
@@ -15,6 +15,21 @@ test("runHook", async () => {
 
     for (const hook of hooks) {
         expect(hook).toHaveBeenCalled();
+    }
+});
+
+test("runHook with arg", async () => {
+    const hooks = [
+        jest.fn(),
+        jest.fn(),
+        jest.fn(),
+        jest.fn(() => Promise.resolve()),
+    ];
+
+    await runHook(hooks, 0);
+
+    for (const hook of hooks) {
+        expect(hook).toHaveBeenCalledWith(0);
     }
 });
 
