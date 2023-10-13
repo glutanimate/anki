@@ -30,12 +30,7 @@ export async function runFilter<R>(
 
     for (const filter of filters) {
         try {
-            const maybeAPromise = filter(result);
-            if (maybeAPromise instanceof Promise) {
-                result = await maybeAPromise;
-            } else {
-                result = maybeAPromise;
-            }
+            result = await Promise.resolve(filter(result));
         } catch (error) {
             console.log("Filter failed: ", error);
         }
