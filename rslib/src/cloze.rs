@@ -304,7 +304,13 @@ fn render_image_occlusion(text: &str, question_side: bool, active: bool, ordinal
             r#"<div class="cloze" {}></div>"#,
             &get_image_cloze_data(text)
         )
-    } else if !active {
+    } else if active {
+        format!(
+            r#"<div class="cloze cloze-revealed" {}></div>"#,
+            &get_image_cloze_data(text)
+        )
+    } 
+    else if !active {
         format!(
             r#"<div class="cloze-inactive" {}></div>"#,
             &get_image_cloze_data(text)

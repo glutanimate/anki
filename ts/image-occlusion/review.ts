@@ -65,7 +65,7 @@ function drawShapes(
 ): void {
     const properties = getShapeProperties();
     const size = canvas;
-    for (const shape of extractShapesFromRenderedClozes(".cloze")) {
+    for (const shape of extractShapesFromRenderedClozes(".cloze:not(.cloze-revealed)")) {
         drawShape(ctx, size, shape, properties, true);
     }
     for (const shape of extractShapesFromRenderedClozes(".cloze-inactive")) {
