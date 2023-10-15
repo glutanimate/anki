@@ -602,5 +602,15 @@ mod test {
                 r#"<div class="cloze" data-shape="rect" data-left="10.0" data-top="20" data-width="30" data-height="10" ></div>"#,
             )
         );
+        assert_eq!(
+            reveal_cloze_text(
+                "{{c2::image-occlusion:polygon:points=0,0 10,10 20,0}}",
+                2,
+                false
+            ),
+            format!(
+                r#"<div class="cloze cloze-revealed" data-shape="polygon" data-points="0,0 10,10 20,0" ></div>"#,
+            )
+        );
     }
 }
